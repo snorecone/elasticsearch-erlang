@@ -33,5 +33,5 @@ start_elasticsearch_httpc_profile() ->
 get_env(Key, Default) ->
     case application:get_env(elasticsearch, Key) of
         undefined -> Default;
-        Val       -> Val
+        {ok, Val} -> Val
     end.
