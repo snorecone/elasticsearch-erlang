@@ -18,3 +18,6 @@ eunit:
 get_deps:
 	@echo "Fetching deps as: $(REBAR)"
 	@$(REBAR) get-deps
+
+run:
+	erl -boot start_sasl -sname elasticsearch -s elasticsearch -pa ebin -pa deps/*/ebin
