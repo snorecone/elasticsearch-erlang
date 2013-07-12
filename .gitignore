@@ -1,0 +1,12 @@
+.eunit
+.qc
+deps
+*.o
+*.app
+*.beam
+*.plt
+*.log
+*.log.*
+*.dump
+.DS_Store
+.tm_properties
