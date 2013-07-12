@@ -55,7 +55,7 @@ handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl } 
     Headers = [{"Content-Length", to_list(erlang:iolist_size(Body))}],
     error_logger:info_msg("url: ~p -- headers: ~p -- body: ~p -- params: ~p", [URL, Headers, Body, Params]),
     Reply = case httpc:request(Method, {URL, Headers, "application/json", to_list(Body)}, 
-        ?HTTP_OPTIONS, ?HTTPC_OPTIONS) of
+        ?HTTP_OPTIONS, ?HTTPC_OPTIONS, ?PROFILE) of
         {ok, {Status, RespBody}} when Status == 200; Status == 201 ->
             {ok, search_result(RespBody)};
         {ok, {Status, RespBodyFail}} ->
