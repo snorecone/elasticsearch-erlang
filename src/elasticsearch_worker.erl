@@ -53,7 +53,13 @@ handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl } 
              true               -> URLPath
     end,
     Headers = [{"Content-Length", to_list(erlang:iolist_size(Body))}],
-    Reply = case httpc:request(Method, {URL, Headers, "application/json", to_list(Body)}, 
+    Request = case Method of
+        delete ->
+            {URL, Headers};
+        _      ->
+            {URL, Headers, "application/json", to_list(Body)}
+    end,
+    Reply = case httpc:request(Method, Request, 
         ?HTTP_OPTIONS, ?HTTPC_OPTIONS, ?PROFILE) of
         {ok, {Status, RespBody}} when Status == 200; Status == 201 ->
             {ok, search_result(RespBody)};
