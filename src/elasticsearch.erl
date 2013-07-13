@@ -7,6 +7,8 @@
     index/3,
     index/4,
     index/5,
+    delete/3,
+    delete/4,
     search/3,
     search/4
 ]).
@@ -39,6 +41,12 @@ index(Index, Type, undefined, Doc, Params) ->
     request(post, [Index, Type], Doc, Params);
 index(Index, Type, Id, Doc, Params) ->
     request(put, [Index, Type, Id], Doc, Params).
+
+delete(Index, Type, Id) ->
+    delete(Index, Type, Id, []).
+
+delete(Index, Type, Id, Params) ->
+    request(delete, [Index, Type, Id], <<>>, Params).
 
 search(Index, Type, Query) ->
     search(Index, Type, Query, []).
