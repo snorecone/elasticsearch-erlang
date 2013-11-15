@@ -10,7 +10,9 @@
     delete/3,
     delete/4,
     search/3,
-    search/4
+    search/4,
+    count/3,
+    count/4
 ]).
 
 start() ->
@@ -53,6 +55,12 @@ search(Index, Type, Query) ->
 
 search(Index, Type, Query, Params) ->
     request(post, [Index, Type, <<"_search">>], Query, Params).
+
+count(Index, Type, Query) ->
+    search(Index, Type, Query, []).
+
+count(Index, Type, Query, Params) ->
+    request(post, [Index, Type, <<"_count">>], Query, Params).
 
 %%
 %% private
