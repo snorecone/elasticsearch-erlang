@@ -48,7 +48,7 @@ handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl } 
         <<>> -> <<>>;
         B    -> jsx:encode(B)
     end,
-    Params = string:join([string:join([Key, Value], "=") || {Key, Value} <- Params0], "&"),
+    Params = string:join([string:join([to_string(Key), to_string(Value)], "=") || {Key, Value} <- Params0], "&"),
     URL = if length(Params) > 0 -> lists:concat([URLPath, "?", Params]);
              true               -> URLPath
     end,
