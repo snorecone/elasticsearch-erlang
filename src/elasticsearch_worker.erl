@@ -4,7 +4,7 @@
 
 -export([
     start_link/1,
-    request/4,
+    request/5,
     init/1,
     handle_call/3,
     handle_cast/2,
@@ -27,10 +27,8 @@
 start_link(Args) ->
     gen_server:start_link(?MODULE, Args, []).
 
-request(Method, Path, Body, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
-        gen_server:call(Worker, {Method, Path, Body, Params})
-    end).
+request(Worker, Method, Path, Body, Params) ->
+    gen_server:call(Worker, {Method, Path, Body, Params}).
 
 %%
 %% gen_server
@@ -48,7 +46,7 @@ handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl } 
         <<>> -> <<>>;
         B    -> jsx:encode(B)
     end,
-    Params = string:join([string:join([to_string(Key), to_string(Value)], "=") || {Key, Value} <- Params0], "&"),
+    Params = string:join([string:join([to_list(Key), to_list(Value)], "=") || {Key, Value} <- Params0], "&"),
     URL = if length(Params) > 0 -> lists:concat([URLPath, "?", Params]);
              true               -> URLPath
     end,
