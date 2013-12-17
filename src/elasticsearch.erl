@@ -9,6 +9,9 @@
     index/4,
     index/5,
     index/6,
+    update/4,
+    update/5,
+    update/6,
     delete/3,
     delete/4,
     delete/5,
@@ -62,6 +65,19 @@ index(Worker, Index, Type, undefined, Doc, Params) ->
     elasticsearch_worker:request(Worker, post, [Index, Type], Doc, Params);
 index(Worker, Index, Type, Id, Doc, Params) ->
     elasticsearch_worker:request(Worker, put, [Index, Type, Id], Doc, Params).
+
+update(Index, Type, Id, Doc) when is_binary(Id) ->
+    update(Index, Type, Id, Doc, []).
+
+update(Worker, Index, Type, Id, Doc) when is_pid(Worker) ->
+    update(Worker, Index, Type, Id, Doc, []);
+update(Index, Type, Id, Doc, Params) ->
+    poolboy:transaction(elasticsearch, fun (Worker) ->
+        update(Worker, Index, Type, Id, Doc, Params)
+    end).
+
+update(Worker, Index, Type, Id, Doc, Params) ->
+    elasticsearch_worker:request(Worker, post, [Index, Type, Id, <<"_update">>], Doc, Params).
 
 delete(Index, Type, Id) ->
     delete(Index, Type, Id, []).
