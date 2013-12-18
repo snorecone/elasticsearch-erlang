@@ -14,11 +14,12 @@
 ]).
 
 -record(state, {
-    base_url
+    base_url,
+    http_options
 }).
 
 -define(PROFILE, elasticsearch).
--define(HTTP_OPTIONS, [{timeout, 5000}]).
+-define(DEFAULT_HTTP_OPTIONS, [{timeout, 5000}]).
 -define(HTTPC_OPTIONS, [{body_format, binary}, {full_result, false}]).
 
 %%
@@ -33,14 +34,15 @@ request(Worker, Method, Path, Body, Params) ->
 %%
 %% gen_server
 %%
-init([Host, Port]) ->
+init([Host, Port, HttpOptions]) ->
     BaseUrl = lists:concat(["http://", Host, ":", to_list(Port), "/"]),
     State = #state{
-        base_url = BaseUrl
+        base_url = BaseUrl,
+        http_options = lists:ukeymerge(1, lists:usort(HttpOptions), ?DEFAULT_HTTP_OPTIONS)
     },
     {ok, State}.
 
-handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl } = State) ->
+handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl, http_options = HttpOptions } = State) ->
     URLPath = BaseUrl ++ string:join([escape(to_list(P)) || P <- Path], "/"),
     Body = case Body0 of 
         <<>> -> <<>>;
@@ -58,7 +60,7 @@ handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl } 
             {URL, Headers, "application/json", to_list(Body)}
     end,
     Reply = case httpc:request(Method, Request, 
-        ?HTTP_OPTIONS, ?HTTPC_OPTIONS, ?PROFILE) of
+        HttpOptions, ?HTTPC_OPTIONS, ?PROFILE) of
         {ok, {Status, RespBody}} when Status == 200; Status == 201 ->
             {ok, search_result(RespBody)};
         {ok, {_Status, RespBodyFail}} ->

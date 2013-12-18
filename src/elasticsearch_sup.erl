@@ -16,13 +16,13 @@ start_link(Args) ->
 %%
 %% supervisor callbacks
 %%
-init([Host, Port, PoolSize, PoolMaxOverflow]) ->
+init([Host, Port, PoolSize, PoolMaxOverflow, HttpOptions]) ->
     PoolSpecs = [poolboy:child_spec(elasticsearch, [
             {name, {local, elasticsearch}},
             {worker_module, elasticsearch_worker},
             {size, PoolSize},
             {max_overflow, PoolMaxOverflow}
         ],
-        [Host, Port]
+        [Host, Port, HttpOptions]
     )],
     {ok, {{one_for_one, 10, 10}, PoolSpecs}}.

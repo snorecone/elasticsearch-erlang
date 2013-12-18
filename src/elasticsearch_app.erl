@@ -17,7 +17,8 @@ start(_StartType, _StartArgs) ->
     Port = get_env(port, 9200),
     PoolSize = get_env(pool_size, 2),
     PoolMaxOverflow = get_env(pool_max_overflow, 10),
-    elasticsearch_sup:start_link([Host, Port, PoolSize, PoolMaxOverflow]).
+    HttpOptions = get_env(http_options, []),
+    elasticsearch_sup:start_link([Host, Port, PoolSize, PoolMaxOverflow, HttpOptions]).
 
 stop(_State) ->
     ok.
