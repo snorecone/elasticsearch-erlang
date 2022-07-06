@@ -1,10 +1,33 @@
--module(elasticsearch).
+%%%-----------------------------------------------------------------------------
+%%% @doc
+%%% User facing facade.
+%%% @author snorecone
+%%% @copyright Apache 2.0
+%%% @date 2022-07-06
+%%% @end
+%%%-----------------------------------------------------------------------------
 
+-module(elasticsearch).
+-author(snorecone).
+
+% elasticsearch:create_index(<<"abc">>).
+% elasticsearch:index(<<"abc">>, <<"_doc">>, #{<<"my_key">> => <<"my_value">>}).
+% elasticsearch:index(<<"abc">>, <<"_doc">>, <<"1">>, #{<<"my_key">> => <<"my_value">>}).
+% elasticsearch:get_document(<<"abc">>, <<"_doc">>, <<"1">>).
+% elasticsearch:index(<<"bank">>, <<"_bulk">>, <<"{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key5\": \"my_value5\"}\n{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key6\": \"my_value6\"}\n{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key7\": \"my_value7\"}\n">>).
+% elasticsearch:index(<<"bank">>, <<"_bulk">>, [#{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key5">> => <<"my_value5">>}, #{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key6">> => <<"my_value6">>}, #{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key7">> => <<"my_value7">>}]).
+% elasticsearch:search(<<"abc">>, <<"_doc">>, #{<<"query">> => #{<<"match">> => #{<<"my_key5">> => <<"my_value5">>} } }).
+
+%%%=============================================================================
+%%% Exports and Definitions
+%%%=============================================================================
+
+%% API
 -export([
-    start/0,
     transaction/1,
     create_index/1,
     create_index/3,
+    get_document/3,
     index/3,
     index/4,
     index/5,
@@ -23,14 +46,12 @@
     count/5
 ]).
 
-start() ->
-    application:start(inets),
-    application:start(poolboy),
-    application:start(jsx),
-    application:start(elasticsearch).
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 transaction(Fun) ->
-    poolboy:transaction(elasticsearch, Fun).
+    poolboy:transaction(elasticsearch_workers, Fun).
 
 create_index(Name) ->
     create_index(Name, [], []).
@@ -40,8 +61,13 @@ create_index(Name, _Settings, _Mappings) ->
     %     {settings, Settings},
     %     {mappings, Mappings}
     % ],
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         elasticsearch_worker:request(Worker, put, [Name], <<>>, [])
+    end).
+
+get_document(Index, Type, Id) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
+        elasticsearch_worker:request(Worker, get, [Index, Type, Id], <<>>, [])
     end).
 
 index(Index, Type, Doc) ->
@@ -57,7 +83,7 @@ index(Index, Type, Doc, Params) ->
 index(Worker, Index, Type, Id, Doc) when is_pid(Worker) ->
     index(Worker, Index, Type, Id, Doc, []);
 index(Index, Type, Id, Doc, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         index(Worker, Index, Type, Id, Doc, Params)
     end).
 
@@ -72,7 +98,7 @@ update(Index, Type, Id, Doc) when is_binary(Id) ->
 update(Worker, Index, Type, Id, Doc) when is_pid(Worker) ->
     update(Worker, Index, Type, Id, Doc, []);
 update(Index, Type, Id, Doc, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         update(Worker, Index, Type, Id, Doc, Params)
     end).
 
@@ -85,7 +111,7 @@ delete(Index, Type, Id) ->
 delete(Worker, Index, Type, Id) when is_pid(Worker) ->
     delete(Worker, Index, Type, Id, []);
 delete(Index, Type, Id, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         delete(Worker, Index, Type, Id, Params)
     end).
 
@@ -98,7 +124,7 @@ search(Index, Type, Query) ->
 search(Worker, Index, Type, Query) when is_pid(Worker) ->
     search(Worker, Index, Type, Query, []);
 search(Index, Type, Query, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         search(Worker, Index, Type, Query, Params)
     end).
 
@@ -111,7 +137,7 @@ count(Index, Type, Query) ->
 count(Worker, Index, Type, Query) when is_pid(Worker) ->
     count(Worker, Index, Type, Query, []);
 count(Index, Type, Query, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         count(Worker, Index, Type, Query, Params)
     end).
 

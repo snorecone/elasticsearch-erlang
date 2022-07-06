@@ -1,24 +1,22 @@
-{application, elasticsearch,
-    [
-        {description, "An Erlang app for elasticsearch REST."},
-        {vsn, "0.0.1"},
-        {modules, []},
-        {registered,[]},
-        {applications, [
-            kernel,
-            stdlib,
-            inets,
-            poolboy,
-            jsx
-        ]},
-        {included_applications, []},
-        {mod, {elasticsearch_app, []}},
-        {env, [
-            {elasticsearch, [
-            {host, "localhost"},
-            {port, 9200},
-            {pool_size, 10},
-            {max_pool_overflow, 15}
-        ]}
+{application, elasticsearch, [
+    {description, "An Erlang app for elasticsearch REST."},
+    {vsn, "0.1.0"},
+    {modules, []},
+    {registered,[]},
+    {licenses, ["Apache 2.0"]},
+    {links, []},
+    {applications, [
+        kernel,
+        stdlib,
+        inets,
+        poolboy,
+        jsx,
+        lager,
+        inets
+    ]},
+    {included_applications, []},
+    {mod, {elasticsearch_app, []}},
+    {env, [
+        
     ]}
 ]}.
