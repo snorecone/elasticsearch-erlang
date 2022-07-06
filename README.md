@@ -11,6 +11,26 @@
 * [erlasticsearch](https://github.com/dieswaytoofast/erlasticsearch) - too much frustration with thrift.
 * [erlastic_search](https://github.com/tsloughter/erlastic_search) - dependency on hackney for http requests (built-in pooling is broken); unable to configure without wrapping the module.
 
+<h2>Config</h2>
+
+Default config is shown below. You can supply your own config in sys.config, but must be of this form.
+
+    {elasticsearch, [
+        {pools, [
+            {elasticsearch_workers, [
+                {size,         10},
+                {max_overflow, 20}
+            ], [
+                {worker_impl,  elasticsearch_worker},
+                {url,          "localhost"},
+                {port,         9200},
+                {http_options, []}
+            ]}
+        ]}
+    ]},
+
+- worker_impl: This is the default worker, but you can supply your own. Must conform to poolboy worker behaviour specs.
+
 <h2> Usage </h2>
 
 Create index:

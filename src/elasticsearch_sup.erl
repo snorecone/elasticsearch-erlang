@@ -39,7 +39,25 @@ init([]) ->
                  intensity => 10,
                  period => 10},
 
-    {ok, Pools} = application:get_env(elasticsearch, pools),
+    Pools = case application:get_env(elasticsearch, pools) of
+        undefined ->
+            {elasticsearch, [
+                {pools, [
+                    {elasticsearch_workers, [
+                        {size,         10},
+                        {max_overflow, 20}
+                    ], [
+                        {worker_impl,  elasticsearch_worker},
+                        {url,          "localhost"},
+                        {port,         9200},
+                        {http_options, []}
+                    ]}
+                ]}
+            ]};
+        {ok, RespPools} ->
+            RespPools
+    end,
+
     PoolSpecs = lists:map(fun({Name, SizeArgs, WorkerArgs}) ->
         WorkerImpl = proplists:get_value(worker_impl, WorkerArgs),
         PoolArgs = [{name, {local, Name}},
