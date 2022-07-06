@@ -1,7 +1,21 @@
--module(elasticsearch).
+%%%-----------------------------------------------------------------------------
+%%% @doc
+%%% User facing facade.
+%%% @author snorecone
+%%% @copyright Apache 2.0
+%%% @date 2022-07-06
+%%% @end
+%%%-----------------------------------------------------------------------------
 
+-module(elasticsearch).
+-author(snorecone).
+
+%%%=============================================================================
+%%% Exports and Definitions
+%%%=============================================================================
+
+%% API
 -export([
-    start/0,
     transaction/1,
     create_index/1,
     create_index/3,
@@ -23,14 +37,12 @@
     count/5
 ]).
 
-start() ->
-    application:start(inets),
-    application:start(poolboy),
-    application:start(jsx),
-    application:start(elasticsearch).
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 transaction(Fun) ->
-    poolboy:transaction(elasticsearch, Fun).
+    poolboy:transaction(elasticsearch_workers, Fun).
 
 create_index(Name) ->
     create_index(Name, [], []).
@@ -40,7 +52,7 @@ create_index(Name, _Settings, _Mappings) ->
     %     {settings, Settings},
     %     {mappings, Mappings}
     % ],
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         elasticsearch_worker:request(Worker, put, [Name], <<>>, [])
     end).
 
@@ -57,7 +69,7 @@ index(Index, Type, Doc, Params) ->
 index(Worker, Index, Type, Id, Doc) when is_pid(Worker) ->
     index(Worker, Index, Type, Id, Doc, []);
 index(Index, Type, Id, Doc, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         index(Worker, Index, Type, Id, Doc, Params)
     end).
 
@@ -72,7 +84,7 @@ update(Index, Type, Id, Doc) when is_binary(Id) ->
 update(Worker, Index, Type, Id, Doc) when is_pid(Worker) ->
     update(Worker, Index, Type, Id, Doc, []);
 update(Index, Type, Id, Doc, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         update(Worker, Index, Type, Id, Doc, Params)
     end).
 
@@ -85,7 +97,7 @@ delete(Index, Type, Id) ->
 delete(Worker, Index, Type, Id) when is_pid(Worker) ->
     delete(Worker, Index, Type, Id, []);
 delete(Index, Type, Id, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         delete(Worker, Index, Type, Id, Params)
     end).
 
@@ -98,7 +110,7 @@ search(Index, Type, Query) ->
 search(Worker, Index, Type, Query) when is_pid(Worker) ->
     search(Worker, Index, Type, Query, []);
 search(Index, Type, Query, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         search(Worker, Index, Type, Query, Params)
     end).
 
@@ -111,7 +123,7 @@ count(Index, Type, Query) ->
 count(Worker, Index, Type, Query) when is_pid(Worker) ->
     count(Worker, Index, Type, Query, []);
 count(Index, Type, Query, Params) ->
-    poolboy:transaction(elasticsearch, fun (Worker) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         count(Worker, Index, Type, Query, Params)
     end).
 

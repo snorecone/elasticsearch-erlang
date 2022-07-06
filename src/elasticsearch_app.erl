@@ -1,38 +1,46 @@
+%%%-----------------------------------------------------------------------------
+%%% @doc
+%%% Top level application module.
+%%% @author snorecone
+%%% @copyright Apache 2.0
+%%% @date 2022-07-06
+%%% @end
+%%%-----------------------------------------------------------------------------
+
 -module(elasticsearch_app).
+-author(snorecone).
 
 -behavior(application).
+
+%%%=============================================================================
+%%% Exports and Definitions
+%%%=============================================================================
 
 -export([
     start/2,
     stop/1
 ]).
 
-%%
-%% application callbacks
-%%
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 start(_StartType, _StartArgs) ->
     {ok, _Pid} = start_elasticsearch_httpc_profile(),
-    Host = get_env(host, "localhost"),
-    Port = get_env(port, 9200),
-    PoolSize = get_env(pool_size, 2),
-    PoolMaxOverflow = get_env(pool_max_overflow, 10),
-    HttpOptions = get_env(http_options, []),
-    elasticsearch_sup:start_link([Host, Port, PoolSize, PoolMaxOverflow, HttpOptions]).
+    lager:debug("Elastic Search Erlang started"),
+    elasticsearch_sup:start_link().
 
 stop(_State) ->
     ok.
 
-%%
-%% private
-%%
-%% start inets with an elasticsearch profile
-%% possibly with configuration options
+%%%=============================================================================
+%%% Internal
+%%%=============================================================================
+
+%%------------------------------------------------------------------------------
+%% @doc
+%% start inets with an elasticsearch profile, possibly with configuration options
+%% @end
+%%------------------------------------------------------------------------------
 start_elasticsearch_httpc_profile() ->
     inets:start(httpc, [{profile, elasticsearch}]).
-
-get_env(Key, Default) ->
-    case application:get_env(elasticsearch, Key) of
-        undefined -> Default;
-        {ok, Val} -> Val
-    end.
