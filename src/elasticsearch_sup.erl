@@ -22,17 +22,19 @@
 ]).
 
 default_config() ->
-    {pools, [
-        {elasticsearch_workers, [
+    [{
+        elasticsearch_workers, 
+        [
             {size,         10},
             {max_overflow, 20}
-        ], [
+        ], 
+        [
             {worker_impl,  elasticsearch_worker},
             {url,          "localhost"},
             {port,         9200},
             {http_options, []}
-        ]}
-    ]}.
+        ]
+    }].
 
 %%%=============================================================================
 %%% API
