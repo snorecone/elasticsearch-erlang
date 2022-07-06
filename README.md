@@ -5,7 +5,16 @@
 <h2 align='center'>
 	An erlang client for elasticsearch's REST interface. Just the bare minimum for now.
 </h2>
+
 <br>
+
+<p align='center'>
+  <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg"/>
+  <img src="https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/Naereen/badges/"/>
+</p>
+
+<br>
+
 <h2> Other elasticsearch clients and why this was made </h2>
 
 * [erlasticsearch](https://github.com/dieswaytoofast/erlasticsearch) - too much frustration with thrift.
