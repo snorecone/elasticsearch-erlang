@@ -58,9 +58,9 @@ request(Worker, Method, Path, Body, Params) ->
 
 -spec init(map()) -> {ok, state()}.
 init(Args) ->
-    Url         = proplists:get_value(url, Args),
-    HttpOptions = proplists:get_value(http_options, Args),
-    Port        = proplists:get_value(port, Args),
+    Url         = proplists:get_value(url, Args, "localhost"),
+    HttpOptions = proplists:get_value(http_options, Args, []),
+    Port        = proplists:get_value(port, Args, 9200),
     BaseUrl     = lists:concat(["http://", Url, ":", to_list(Port), "/"]),
     State = #state{
         base_url = BaseUrl,

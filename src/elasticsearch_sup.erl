@@ -21,18 +21,16 @@
     init/1
 ]).
 
-defualt_config() ->
-    {elasticsearch, [
-        {pools, [
-            {elasticsearch_workers, [
-                {size,         10},
-                {max_overflow, 20}
-            ], [
-                {worker_impl,  elasticsearch_worker},
-                {url,          "localhost"},
-                {port,         9200},
-                {http_options, []}
-            ]}
+default_config() ->
+    {pools, [
+        {elasticsearch_workers, [
+            {size,         10},
+            {max_overflow, 20}
+        ], [
+            {worker_impl,  elasticsearch_worker},
+            {url,          "localhost"},
+            {port,         9200},
+            {http_options, []}
         ]}
     ]}.
 
@@ -54,7 +52,7 @@ init([]) ->
                  intensity => 10,
                  period => 10},
 
-    Pools = application:get_env(elasticsearch, pools, defualt_config()),
+    Pools = application:get_env(elasticsearch, pools, default_config()),
 
     PoolSpecs = lists:map(fun({Name, SizeArgs, WorkerArgs}) ->
         WorkerImpl = proplists:get_value(worker_impl, WorkerArgs),
