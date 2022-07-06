@@ -10,6 +10,14 @@
 -module(elasticsearch).
 -author(snorecone).
 
+% elasticsearch:create_index(<<"abc">>).
+% elasticsearch:index(<<"abc">>, <<"_doc">>, #{<<"my_key">> => <<"my_value">>}).
+% elasticsearch:index(<<"abc">>, <<"_doc">>, <<"1">>, #{<<"my_key">> => <<"my_value">>}).
+% elasticsearch:get_document(<<"abc">>, <<"_doc">>, <<"1">>).
+% elasticsearch:index(<<"bank">>, <<"_bulk">>, <<"{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key5\": \"my_value5\"}\n{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key6\": \"my_value6\"}\n{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key7\": \"my_value7\"}\n">>).
+% elasticsearch:index(<<"bank">>, <<"_bulk">>, [#{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key5">> => <<"my_value5">>}, #{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key6">> => <<"my_value6">>}, #{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key7">> => <<"my_value7">>}]).
+% elasticsearch:search(<<"abc">>, <<"_doc">>, #{<<"query">> => #{<<"match">> => #{<<"my_key5">> => <<"my_value5">>} } }).
+
 %%%=============================================================================
 %%% Exports and Definitions
 %%%=============================================================================
@@ -19,6 +27,7 @@
     transaction/1,
     create_index/1,
     create_index/3,
+    get_document/3,
     index/3,
     index/4,
     index/5,
@@ -54,6 +63,11 @@ create_index(Name, _Settings, _Mappings) ->
     % ],
     poolboy:transaction(elasticsearch_workers, fun (Worker) ->
         elasticsearch_worker:request(Worker, put, [Name], <<>>, [])
+    end).
+
+get_document(Index, Type, Id) ->
+    poolboy:transaction(elasticsearch_workers, fun (Worker) ->
+        elasticsearch_worker:request(Worker, get, [Index, Type, Id], <<>>, [])
     end).
 
 index(Index, Type, Doc) ->

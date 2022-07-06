@@ -41,6 +41,7 @@
 -define(PROFILE, elasticsearch).
 -define(DEFAULT_HTTP_OPTIONS, [{timeout, 5000}]).
 -define(HTTPC_OPTIONS, [{body_format, binary}, {full_result, false}]).
+-define(NEW_LINE, <<"\n">>).
 
 %%%=============================================================================
 %%% API
@@ -72,10 +73,7 @@ init(Args) ->
 handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl, http_options = HttpOptions } = State) ->
     lager:debug("Worker received work: ~p, ~p, ~p, ~p", [Method, Path, Body0, Params0]),
     URLPath = BaseUrl ++ string:join([escape(to_list(P)) || P <- Path], "/"),
-    Body = case Body0 of 
-        <<>> -> <<>>;
-        B    -> jsx:encode(B)
-    end,
+    Body = convert_body(Body0),
     Params = string:join([string:join([to_list(Key), to_list(Value)], "=") || {Key, Value} <- Params0], "&"),
     URL = if length(Params) > 0 -> lists:concat([URLPath, "?", Params]);
              true               -> URLPath
@@ -84,16 +82,21 @@ handle_call({Method, Path, Body0, Params0}, _From, #state{ base_url = BaseUrl, h
     Request = case Method of
         delete ->
             {URL, Headers};
+        get ->
+            {URL, Headers};
         _      ->
             {URL, Headers, "application/json", to_list(Body)}
     end,
+    lager:debug("Sending ~p request: ~p", [Method, Request]),
     Reply = case httpc:request(Method, Request, 
         HttpOptions, ?HTTPC_OPTIONS, ?PROFILE) of
         {ok, {Status, RespBody}} when Status == 200; Status == 201 ->
             {ok, search_result(RespBody)};
         {ok, {_Status, RespBodyFail}} ->
+            lager:error("Error sending request: ~p", [RespBodyFail]),
             {error, RespBodyFail};
         {error, Reason} ->
+            lager:error("Error sending request: ~p", [Reason]),
             {error, Reason}
     end,
     {reply, Reply, State};
@@ -131,3 +134,19 @@ to_list(Atom)    when is_atom(Atom)       -> atom_to_list(Atom).
 
 escape(String) ->
     edoc_lib:escape_uri(String).
+
+convert_body(Body) when is_binary(Body) ->
+    Body;
+convert_body(List) when is_list(List) ->
+    lists:foldl(
+        fun(Elem, Acc) ->
+            Bin = convert_body(Elem),
+            <<Acc/binary, Bin/binary, ?NEW_LINE/binary>>
+        end,
+        <<>>,
+        List);
+convert_body(Body) ->
+    case Body of 
+        <<>> -> <<>>;
+        B    -> jsx:encode(B)
+    end.

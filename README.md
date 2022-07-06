@@ -46,61 +46,34 @@ Create index:
 
 	elasticsearch:create_index(<<"my_index">>).
 
-Return:
+Add to index using jsx to convert map:
 
-	{ok,#{<<"acknowledged">> => true,<<"index">> => <<"my_index">>, 
-	  <<"shards_acknowledged">> => true}}
+	elasticsearch:index(<<"my_index">>, <<"_doc">>, #{<<"my_key">> => <<"my_value">>}).
 
-Add to index:
+Add to index using binary query:
 
-	elasticsearch:index(<<"my_index">>, <<"type">>, [{<<"key1">>, <<"value1">>}]).
+	elasticsearch:index(<<"my_index">>, <<"_doc">>, <<"{\"my_key\": \"my_value\"}">>).
 
-Return:
+Add to index with id:
 
-	{ok,#{<<"_id">> => <<"q_xZ04EBi8Z_kFa_Foev">>,
-      <<"_index">> => <<"my_index">>,<<"_primary_term">> => 1,
-      <<"_seq_no">> => 0,
-      <<"_shards">> =>
-          #{<<"failed">> => 0,<<"successful">> => 1,<<"total">> => 2},
-      <<"_type">> => <<"type">>,<<"_version">> => 1,
-      <<"result">> => <<"created">>}}
+	elasticsearch:index(<<"my_index">>, <<"_doc">>, <<"id">>, #{<<"my_key">> => <<"my_value">>}).
+
+Get document:
+
+    elasticsearch:get_document(<<"my_index">>, <<"_doc">>, <<"id">>).
+
+Add in bulk using jsx to convert map:
+
+    elasticsearch:index(<<"bank">>, <<"_bulk">>, [#{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key5">> => <<"my_value5">>}, #{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key6">> => <<"my_value6">>}, #{ <<"index">> => #{<<"_index">> => <<"abc">>} }, #{<<"my_key7">> => <<"my_value7">>}]).
+
+Add in bulk using binary query:
+
+    elasticsearch:index(<<"bank">>, <<"_bulk">>, <<"{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key5\": \"my_value5\"}\n{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key6\": \"my_value6\"}\n{ \"index\": {\"_index\": \"abc\"} }\n{\"my_key7\": \"my_value7\"}\n">>).
 
 Search:
 
-	elasticsearch:search(<<"my_index">>, <<"type">>, #{<<"query">> => #{<<"match">> => #{<<"key1">> => <<"value1">>}}}).
-
-Return:
-
-	{ok,#{<<"_shards">> =>
-          #{<<"failed">> => 0,<<"skipped">> => 0,<<"successful">> => 1,
-            <<"total">> => 1},
-      <<"hits">> =>
-          #{<<"hits">> =>
-                [#{<<"_id">> => <<"q_xZ04EBi8Z_kFa_Foev">>,
-                   <<"_index">> => <<"my_index">>,<<"_score">> => 0.2876821,
-                   <<"_source">> => #{<<"key1">> => <<"value1">>},
-                   <<"_type">> => <<"type">>}],
-            <<"max_score">> => 0.2876821,
-            <<"total">> =>
-                #{<<"relation">> => <<"eq">>,<<"value">> => 1}},
-      <<"timed_out">> => false,<<"took">> => 8}}
+	elasticsearch:search(<<"my_index">>, <<"_doc">>, #{<<"query">> => #{<<"match">> => #{<<"key1">> => <<"value1">>}}}).
 
 Count:
 
-	elasticsearch:count(<<"my_index">>, <<"type">>, #{<<"query">> => #{<<"match">> => #{<<"key1">> => <<"value1">>}}}).
-
-Return:
-
-	{ok,#{<<"_shards">> =>
-          #{<<"failed">> => 0,<<"skipped">> => 0,<<"successful">> => 1,
-            <<"total">> => 1},
-      <<"hits">> =>
-          #{<<"hits">> =>
-                [#{<<"_id">> => <<"q_xZ04EBi8Z_kFa_Foev">>,
-                   <<"_index">> => <<"my_index">>,<<"_score">> => 0.2876821,
-                   <<"_source">> => #{<<"key1">> => <<"value1">>},
-                   <<"_type">> => <<"type">>}],
-            <<"max_score">> => 0.2876821,
-            <<"total">> =>
-                #{<<"relation">> => <<"eq">>,<<"value">> => 1}},
-      <<"timed_out">> => false,<<"took">> => 2}}
+	elasticsearch:count(<<"my_index">>, <<"_doc">>, #{<<"query">> => #{<<"match">> => #{<<"key1">> => <<"value1">>}}}).
